@@ -1,0 +1,674 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>DevInterview – Mobile v3 (app store)</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* Mockup app mobile v3 – mobile.html?s=bank|glossary|onboard|today|card|answer|practice|interview|report|lock ; không có ?s = bảng tổng hợp.
+   Chỉ giữ vòng lặp chính: Hôm nay → lật thẻ → phỏng vấn giọng nói → báo cáo → câu yếu quay lại lịch ôn. 5 tab: Câu hỏi · Hôm nay · Luyện · Thuật ngữ · Phỏng vấn. */
+:root{
+  --bg:#f5f6fa; --surface:#fff; --surface2:#f8f9fc; --hover:#f1f3f8;
+  --line:#e7e9f0; --line2:#d9dce6;
+  --text:#0f172a; --body:#334155; --muted:#475569; --subtle:#64748b;
+  --brand:#6d28d9; --brand-soft:#f3efff; --brand-line:#ddd3fe; --brand-ink:#1e1b4b;
+  --green:#059669; --amber:#d97706; --red:#dc2626;
+  --tip:#fff7ed; --tip-line:#fed7aa; --tip-ink:#431407; --tip-head:#c2410c;
+  --ex:#f0f9ff; --ex-line:#bae6fd; --ex-ink:#0c4a6e; --ex-head:#0369a1;
+  --track:#eceef4;
+  --hero:linear-gradient(150deg,#7c3aed 0%,#4f46e5 60%,#2563eb 100%);
+  --shadow:0 1px 2px rgba(15,23,42,.04),0 2px 6px rgba(15,23,42,.05);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font:15px/1.5 Inter,"Segoe UI",system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+svg.i{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex:none}
+.mono{font-family:"JetBrains Mono",Consolas,monospace}
+.screen{display:none;width:390px;height:844px;flex-direction:column;position:relative;overflow:hidden;background:var(--bg)}
+.screen.on{display:flex}
+
+/* khung máy */
+.status{height:47px;flex:none;display:flex;align-items:center;justify-content:space-between;padding:6px 28px 0 34px;font-weight:600;font-size:15px}
+.status .r{display:flex;gap:6px;align-items:center}
+.batt{width:25px;height:12px;border:1.5px solid currentColor;border-radius:4px;padding:1.5px;opacity:.9}
+.batt i{display:block;height:100%;width:75%;background:currentColor;border-radius:1px}
+.home-ind{position:absolute;bottom:8px;left:50%;transform:translateX(-50%);width:134px;height:5px;border-radius:99px;background:var(--text)}
+.body{flex:1;overflow:hidden;padding:4px 20px 16px;display:flex;flex-direction:column;gap:16px}
+.tabbar{flex:none;height:84px;border-top:1px solid var(--line);background:rgba(255,255,255,.96);display:flex;padding:8px 6px 26px}
+.tab{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;font-size:11px;font-weight:600;color:var(--subtle);position:relative}
+.tab svg{width:24px;height:24px}
+.tab.on{color:var(--brand)}
+.tab .b{position:absolute;top:-4px;left:calc(50% + 6px);min-width:17px;height:17px;border-radius:99px;background:var(--red);color:#fff;font-size:10.5px;font-weight:700;display:grid;place-items:center;padding:0 4px;border:2px solid #fff}
+
+/* chung */
+h1{font-size:28px;font-weight:800;letter-spacing:-.025em;line-height:1.15}
+h2{font-size:17px;font-weight:700;letter-spacing:-.01em}
+.sub{color:var(--muted)}
+.small{font-size:13px}.xs{font-size:12px}
+.row{display:flex;align-items:center;gap:10px}
+.col{display:flex;flex-direction:column}
+.grow{flex:1;min-width:0}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow)}
+.pad{padding:16px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;height:52px;padding:0 20px;border-radius:14px;font:700 16px Inter,sans-serif;border:1px solid transparent;width:100%}
+.btn.primary{background:var(--brand);color:#fff;box-shadow:0 6px 16px rgba(109,40,217,.28)}
+.btn.ghost{background:var(--surface);border-color:var(--line2);color:var(--text)}
+.iconbtn{width:40px;height:40px;border-radius:99px;display:grid;place-items:center;color:var(--text);background:var(--surface);border:1px solid var(--line);flex:none}
+.chip{display:inline-flex;align-items:center;gap:7px;height:38px;padding:0 14px;border-radius:99px;border:1px solid var(--line2);font-size:14px;font-weight:600;color:var(--muted);background:var(--surface);white-space:nowrap}
+.chip svg{width:17px;height:17px;color:var(--c,var(--subtle))}
+.chip.on{color:var(--brand-ink);border-color:var(--brand);background:var(--brand-soft);box-shadow:inset 0 0 0 1px var(--brand)}
+.chip .n{font-size:12px;color:var(--subtle);font-weight:600}
+.chipi{width:40px;height:40px;border-radius:12px;display:grid;place-items:center;flex:none;color:var(--c,var(--brand));background:color-mix(in srgb,var(--c,var(--brand)) 11%,#fff)}
+.chipi.sm{width:34px;height:34px;border-radius:10px}.chipi.sm svg{width:18px;height:18px}
+.tagc{display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:700;padding:3px 10px;border-radius:99px;color:var(--c,var(--brand));background:color-mix(in srgb,var(--c,var(--brand)) 10%,#fff);border:1px solid color-mix(in srgb,var(--c,var(--brand)) 22%,#fff)}
+.bar{height:6px;border-radius:99px;background:var(--track);overflow:hidden}
+.bar>span{display:block;height:100%;border-radius:99px;background:var(--c,var(--brand))}
+.sect{display:flex;align-items:baseline}
+.sect a{margin-left:auto;font-size:13px;font-weight:600;color:var(--brand)}
+.k-fe{--c:#0e7490}.k-be{--c:#6d28d9}.k-java{--c:#c2410c}.k-ai{--c:#b45309}.k-do{--c:#047857}.k-mo{--c:#be185d}.k-da{--c:#1d4ed8}.k-qa{--c:#4d7c0f}.k-cs{--c:#0f766e}.k-ds{--c:#c2410c}.k-sd{--c:#b91c1c}.k-bh{--c:#475569}
+.k-junior{--c:#2563eb}.k-mid{--c:#d97706}
+.toggle{width:51px;height:31px;border-radius:99px;background:var(--line2);position:relative;flex:none}
+.toggle::after{content:"";position:absolute;top:2px;left:2px;width:27px;height:27px;border-radius:99px;background:#fff;box-shadow:0 2px 4px rgba(0,0,0,.2)}
+.toggle.on{background:var(--green)}.toggle.on::after{left:22px}
+.u{text-decoration:underline dotted var(--brand) 2px;text-underline-offset:3px;color:var(--brand-ink);font-weight:600}
+.u.open{background:var(--brand-soft);border-radius:4px;padding:0 3px;margin:0 -3px;text-decoration-style:solid}
+
+/* onboarding */
+.seg{display:grid;grid-template-columns:repeat(4,1fr);background:var(--hover);border-radius:12px;padding:3px;gap:3px}
+.seg span{height:38px;display:grid;place-items:center;border-radius:10px;font-size:14px;font-weight:600;color:var(--muted)}
+.seg span.on{background:#fff;color:var(--text);box-shadow:var(--shadow)}
+.wrap{display:flex;flex-wrap:wrap;gap:8px}
+.setrow{display:flex;align-items:center;gap:12px;padding:14px 16px}
+.setrow+.setrow{border-top:1px solid var(--line)}
+
+/* hôm nay */
+.streak{display:inline-flex;align-items:center;gap:5px;height:36px;padding:0 12px;border-radius:99px;background:var(--tip);border:1px solid var(--tip-line);color:var(--tip-head);font-weight:800;font-size:15px}
+.streak svg{width:18px;height:18px}
+.avatar{width:40px;height:40px;border-radius:99px;background:linear-gradient(135deg,#c4b5fd,#93c5fd);display:grid;place-items:center;font-weight:800;color:#3b0764;font-size:15px}
+.hero{border-radius:24px;padding:20px;background:linear-gradient(150deg,#10b981 0%,#0e7490 100%);color:#fff;position:relative;overflow:hidden;box-shadow:0 12px 30px rgba(14,116,144,.32)}
+.hero::before{content:"";position:absolute;inset:0;background:radial-gradient(220px 160px at 100% 0%,rgba(255,255,255,.25),transparent 70%)}
+.hero>*{position:relative}
+.hero .big{font-size:44px;font-weight:800;letter-spacing:-.03em;line-height:1}
+.hero .parts{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:16px 0}
+.hero .part{background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.18);border-radius:14px;padding:10px 12px}
+.hero .part b{font-size:20px;font-weight:800;display:block;line-height:1.2}
+.hero .part span{font-size:12px;opacity:.85}
+.hero .go{height:52px;border-radius:14px;background:#fff;color:#115e59;font-weight:800;font-size:16px;display:flex;align-items:center;justify-content:center;gap:8px}
+.hero .go svg{fill:currentColor;stroke:none;width:16px;height:16px}
+.tiles{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.tile{padding:14px;display:flex;flex-direction:column;gap:10px}
+.week{display:flex;justify-content:space-between}
+.day{display:flex;flex-direction:column;align-items:center;gap:6px;font-size:12px;font-weight:600;color:var(--subtle)}
+.day i{width:32px;height:32px;border-radius:99px;display:grid;place-items:center;border:1.5px dashed var(--line2)}
+.day.done i{background:var(--brand);border:0;color:#fff}
+.day.done i svg{width:15px;height:15px;stroke-width:3}
+.day.today{color:var(--brand)}
+.day.today i{border:2px solid var(--brand);border-style:solid}
+
+/* thẻ */
+.topnav{flex:none;height:52px;display:flex;align-items:center;gap:12px;padding:0 20px}
+.prog{flex:1;height:8px;border-radius:99px;background:var(--track);overflow:hidden}
+.prog span{display:block;height:100%;background:var(--brand);border-radius:99px}
+.stack{flex:1;position:relative;margin:8px 4px 0}
+.fc{position:absolute;inset:0;border-radius:26px;background:#fff;border:1px solid var(--line);box-shadow:0 18px 40px rgba(15,23,42,.12);padding:22px;display:flex;flex-direction:column}
+.fc.back1{transform:translateY(14px) scale(.94);opacity:.7;box-shadow:none}
+.fc.back2{transform:translateY(26px) scale(.88);opacity:.45;box-shadow:none}
+.fc.swipe{transform:translateX(18px) rotate(3.5deg);transform-origin:50% 100%;border-color:#a7f3d0}
+.stamp{position:absolute;top:26px;left:20px;transform:rotate(-14deg);border:3px solid var(--green);color:var(--green);font-weight:800;font-size:22px;letter-spacing:.06em;padding:2px 12px;border-radius:10px;background:rgba(255,255,255,.85)}
+.fc .q{font-size:25px;font-weight:800;letter-spacing:-.02em;line-height:1.28;margin-top:22px}
+.fc .hint{margin-top:auto;display:flex;align-items:center;justify-content:center;gap:8px;color:var(--subtle);font-size:14px;font-weight:600}
+.rate{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.rbtn{height:62px;border-radius:16px;display:flex;flex-direction:column;align-items:center;justify-content:center;font-weight:800;font-size:15px;border:1.5px solid;background:#fff}
+.rbtn span{font-size:12px;font-weight:600;opacity:.8}
+.rbtn.hard{color:var(--red);border-color:#fecaca;background:#fef2f2}
+.rbtn.mid{color:var(--amber);border-color:#fde68a;background:#fffbeb}
+.rbtn.easy{color:var(--green);border-color:#a7f3d0;background:#ecfdf5}
+.gest{display:flex;justify-content:space-between;font-size:12.5px;font-weight:600;color:var(--subtle);padding:0 6px}
+
+/* đáp án */
+.box{border-radius:16px;padding:14px 16px;border:1px solid}
+.box .h{font-size:12px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;margin-bottom:6px;display:flex;align-items:center;gap:6px}
+.box .h svg{width:15px;height:15px}
+.box.key{background:var(--brand-soft);border-color:var(--brand-line);color:var(--brand-ink)}.box.key .h{color:var(--brand)}
+.box.ex{background:var(--ex);border-color:var(--ex-line);color:var(--ex-ink)}.box.ex .h{color:var(--ex-head)}
+.box.tip{background:var(--tip);border-color:var(--tip-line);color:var(--tip-ink)}.box.tip .h{color:var(--tip-head)}
+.box p{font-size:14.5px;line-height:1.55}
+.pop{position:absolute;left:20px;right:20px;top:368px;background:#fff;border-radius:18px;border:1px solid var(--line);box-shadow:0 20px 50px rgba(15,23,42,.22);padding:16px;z-index:5}
+.pop::before{content:"";position:absolute;bottom:-8px;left:155px;width:16px;height:16px;background:#fff;border-right:1px solid var(--line);border-bottom:1px solid var(--line);transform:rotate(45deg)}
+.sbtn{height:40px;border-radius:11px;display:inline-flex;align-items:center;justify-content:center;gap:6px;font-size:14px;font-weight:700;padding:0 14px}
+
+/* luyện */
+.search{height:46px;border-radius:14px;background:#fff;border:1px solid var(--line);display:flex;align-items:center;gap:10px;padding:0 14px;color:var(--subtle);font-size:15px}
+.topic{display:flex;align-items:center;gap:12px;padding:11px 0}
+.topic+.topic{border-top:1px solid var(--line)}
+.tnum{width:28px;height:28px;border-radius:99px;display:grid;place-items:center;font-size:13px;font-weight:800;flex:none;background:var(--hover);color:var(--subtle)}
+.tnum.done{background:var(--green);color:#fff}.tnum.done svg{width:14px;height:14px;stroke-width:3}
+.tnum.cur{background:var(--brand);color:#fff;box-shadow:0 0 0 4px var(--brand-soft)}
+.lrow{display:flex;align-items:center;gap:12px;padding:12px 14px}
+.lrow+.lrow{border-top:1px solid var(--line)}
+
+/* câu hỏi */
+.k-intern{--c:#0f766e}.k-senior{--c:#be123c}
+.hscroll{display:flex;gap:8px;overflow:hidden;margin:0 -20px;padding:0 20px;flex:none}
+.chip.sm{height:32px;padding:0 12px;font-size:13px}
+.qi{display:flex;gap:12px;padding:12px 14px;align-items:flex-start}
+.qi+.qi{border-top:1px solid var(--line)}
+.qi .t{font-size:14.5px;font-weight:600;line-height:1.4;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.qi .m{display:flex;align-items:center;gap:6px;margin-top:6px;font-size:12px;font-weight:600;color:var(--subtle)}
+.qi .m svg{width:14px;height:14px}
+.qi .tagc{padding:1px 8px;font-size:11.5px;margin-right:2px}
+.st{width:24px;height:24px;border-radius:99px;display:grid;place-items:center;flex:none;margin-top:1px;border:1.5px dashed var(--line2)}
+.st svg{width:13px;height:13px;stroke-width:3}
+.st.done{background:var(--green);border:0;color:#fff}
+.st.due{background:#fffbeb;border:1.5px solid #fde68a;color:var(--amber)}.st.due svg{stroke-width:2.2}
+.st.weak{background:#fef2f2;border:1.5px solid #fecaca;color:var(--red)}.st.weak svg{stroke-width:2.2}
+.ghead{display:flex;align-items:center;gap:8px;font-size:12px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--subtle)}
+.fbadge{position:absolute;top:-5px;right:-5px;min-width:18px;height:18px;border-radius:99px;background:var(--brand);color:#fff;font-size:10.5px;font-weight:700;display:grid;place-items:center;border:2px solid var(--bg)}
+
+/* thuật ngữ */
+.gl{display:flex;gap:12px;align-items:center;padding:11px 14px}
+.gl+.gl{border-top:1px solid var(--line)}
+.gl .t{font-size:15px;font-weight:700}
+.gl .d{font-size:13px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px}
+.letter{font-size:13px;font-weight:800;color:var(--brand);margin:2px 0 -6px 4px}
+.az{position:absolute;right:4px;top:268px;display:flex;flex-direction:column;align-items:center;font-size:10px;font-weight:700;color:var(--brand);line-height:1.55}
+.seg.three{grid-template-columns:repeat(3,1fr)}.seg.three span{display:flex;align-items:center;justify-content:center}
+.seg .n{font-size:12px;color:var(--subtle);margin-left:4px}
+
+/* phỏng vấn */
+.room{flex:1;display:flex;flex-direction:column;padding:10px 20px 24px;gap:14px;overflow:hidden}
+.ai{display:flex;gap:10px;align-items:flex-start}
+.aiav{width:40px;height:40px;border-radius:99px;background:var(--hero);display:grid;place-items:center;color:#fff;flex:none;box-shadow:0 0 0 4px rgba(124,58,237,.14)}
+.bub{background:#fff;border:1px solid var(--line);border-radius:4px 18px 18px 18px;padding:13px 15px;font-size:16px;line-height:1.5;font-weight:500;box-shadow:var(--shadow)}
+.me{align-self:flex-end;max-width:86%;background:var(--brand-soft);border:1px solid var(--brand-line);border-radius:18px 4px 18px 18px;padding:13px 15px;font-size:15.5px;color:var(--brand-ink)}
+.caret{display:inline-block;width:2px;height:18px;background:var(--brand);vertical-align:-3px;margin-left:2px}
+.wave{display:flex;align-items:center;justify-content:center;gap:4px;height:56px}
+.wave i{width:4px;border-radius:99px;background:var(--brand);opacity:.85}
+.controls{display:flex;align-items:center;justify-content:space-between;padding:0 34px 40px}
+.mic{width:88px;height:88px;border-radius:99px;background:var(--red);display:grid;place-items:center;color:#fff;box-shadow:0 0 0 8px rgba(220,38,38,.12),0 0 0 18px rgba(220,38,38,.06),0 10px 24px rgba(220,38,38,.35)}
+.mic i{width:26px;height:26px;border-radius:6px;background:#fff;display:block}
+.side{display:flex;flex-direction:column;align-items:center;gap:6px;font-size:12px;font-weight:600;color:var(--muted)}
+.side .iconbtn{width:52px;height:52px}
+
+/* báo cáo */
+.ring{width:132px;height:132px;border-radius:99px;background:conic-gradient(var(--brand) 0 68%,var(--track) 68% 100%);display:grid;place-items:center;flex:none}
+.ring>div{width:108px;height:108px;border-radius:99px;background:var(--bg);display:grid;place-items:center;text-align:center}
+.ring b{font-size:36px;font-weight:800;letter-spacing:-.03em;line-height:1}
+.crit{display:grid;grid-template-columns:auto 1fr auto;gap:8px 12px;align-items:center;font-size:13.5px;font-weight:600}
+.qrow{display:flex;align-items:center;gap:12px;padding:11px 14px}
+.qrow+.qrow{border-top:1px solid var(--line)}
+.sc{width:38px;height:28px;border-radius:8px;display:grid;place-items:center;font-weight:800;font-size:14px;flex:none}
+.sc.g{background:#ecfdf5;color:var(--green)}.sc.a{background:#fffbeb;color:var(--amber)}.sc.r{background:#fef2f2;color:var(--red)}
+
+/* màn khoá */
+.lock{background:radial-gradient(400px 360px at 20% 10%,#a78bfa 0%,transparent 60%),radial-gradient(420px 420px at 90% 70%,#60a5fa 0%,transparent 60%),linear-gradient(170deg,#4c1d95,#1e3a8a 70%,#0f172a);color:#fff}
+.lock .home-ind{background:#fff}
+.clock{text-align:center;margin-top:8px}
+.clock .d{font-size:18px;font-weight:600;opacity:.9}
+.clock .t{font-size:92px;font-weight:700;letter-spacing:-.04em;line-height:1}
+.lw{display:flex;justify-content:center;gap:14px;margin-top:10px}
+.lw>div{height:60px;border-radius:16px;background:rgba(255,255,255,.16);backdrop-filter:blur(10px);display:flex;align-items:center;gap:10px;padding:0 14px;font-size:13px;line-height:1.25}
+.lw b{font-size:20px;font-weight:800;display:block}
+.gauge{width:40px;height:40px;border-radius:99px;background:conic-gradient(#fff 0 64%,rgba(255,255,255,.25) 64%);display:grid;place-items:center}
+.gauge i{width:32px;height:32px;border-radius:99px;background:#3b2a8f;display:grid;place-items:center;font-style:normal;font-size:11px;font-weight:800}
+.notes{margin-top:auto;padding:0 12px 18px;display:flex;flex-direction:column;gap:8px}
+.note{border-radius:22px;background:rgba(255,255,255,.82);backdrop-filter:blur(20px);color:var(--text);padding:13px 15px;display:flex;gap:12px}
+.appic{width:38px;height:38px;border-radius:10px;background:var(--hero);display:grid;place-items:center;color:#fff;flex:none}
+.appic svg{width:20px;height:20px;stroke-width:2.4}
+.note .nt{font-size:14px;line-height:1.35}
+.note .acts{display:flex;gap:8px;margin-top:9px}
+.note .acts span{height:32px;padding:0 12px;border-radius:99px;background:rgba(15,23,42,.07);font-size:13px;font-weight:700;display:grid;place-items:center}
+.lockbtns{display:flex;justify-content:space-between;padding:0 46px 34px}
+.lockbtns i{width:50px;height:50px;border-radius:99px;background:rgba(255,255,255,.18);display:grid;place-items:center}
+
+/* bảng tổng hợp */
+.overview{display:none;padding:36px 40px 44px;background:#eef0f6}
+.overview.on{display:block}
+.ov-head{display:flex;align-items:center;gap:14px;margin-bottom:28px}
+.ov-head .appic{width:56px;height:56px;border-radius:15px}
+.ov-head .appic svg{width:28px;height:28px}
+.ov-grid{display:grid;grid-template-columns:repeat(4,390px);gap:34px 30px}
+.ov-grid figure{display:flex;flex-direction:column;gap:10px}
+.ov-grid figcaption{font-size:15px;font-weight:700;color:var(--text)}
+.ov-grid figcaption span{display:block;font-weight:500;font-size:13px;color:var(--muted)}
+.phone{width:390px;height:844px;border-radius:44px;overflow:hidden;box-shadow:0 0 0 10px #0f172a,0 24px 60px rgba(15,23,42,.25);border:0}
+</style>
+</head>
+<body>
+
+<!-- 0a. Câu hỏi: ngân hàng câu hỏi, tab đầu tiên. Lọc mảng (chip cuộn ngang) + level/trạng thái; nhóm theo chủ đề theo thứ tự lộ trình -->
+<section class="screen" id="bank">
+  <div class="status"><span>9:41</span><span class="r">●●● <span class="batt"><i></i></span></span></div>
+  <div class="body" style="gap:12px">
+    <div class="row" style="gap:8px">
+      <div class="search grow"><i data-i="search"></i>Tìm trong 479 câu…</div>
+      <span class="iconbtn" style="width:46px;height:46px;border-radius:14px;position:relative"><i data-i="filter"></i><span class="fbadge">2</span></span>
+    </div>
+    <div class="hscroll">
+      <span class="chip sm">Tất cả</span>
+      <span class="chip sm on k-be"><i data-i="t-be"></i>Backend <span class="n">47</span></span>
+      <span class="chip sm k-java"><i data-i="t-java"></i>Java & Spring <span class="n">43</span></span>
+      <span class="chip sm k-fe"><i data-i="t-fe"></i>Frontend <span class="n">43</span></span>
+    </div>
+    <div class="row" style="gap:8px">
+      <span class="chip sm on">Junior<i data-i="down" style="--c:var(--brand)"></i></span>
+      <span class="chip sm">Trạng thái<i data-i="down"></i></span>
+      <span class="chip sm"><i data-i="star" style="--c:#d97706"></i>Đã lưu</span>
+    </div>
+    <div class="ghead"><span class="grow">3 · Database</span><span style="letter-spacing:0;text-transform:none">5/8 đã làm</span></div>
+    <div class="card" style="box-shadow:none;margin-top:-4px">
+      <div class="qi"><span class="st done"><i data-i="check"></i></span><div class="grow"><div class="t">Giải thích các loại JOIN trong SQL. WHERE và HAVING khác nhau thế nào?</div><div class="m"><span class="tagc k-intern">Intern</span><i data-i="code"></i>Có code · ôn lại sau 8 ngày</div></div></div>
+      <div class="qi"><span class="st done"><i data-i="check"></i></span><div class="grow"><div class="t">Transaction là gì? Giải thích ACID.</div><div class="m"><span class="tagc k-junior">Junior</span><i data-i="code"></i>Có code</div></div><i data-i="star" style="color:var(--amber);fill:var(--amber);width:18px;height:18px"></i></div>
+      <div class="qi"><span class="st due"><i data-i="clock"></i></span><div class="grow"><div class="t">Index trong database là gì? Khi nào index làm chậm hệ thống?</div><div class="m"><span class="tagc k-mid">Mid</span><span style="color:var(--amber)">Đến hạn hôm nay</span></div></div><i data-i="star" style="color:var(--amber);fill:var(--amber);width:18px;height:18px"></i></div>
+      <div class="qi"><span class="st weak"><i data-i="alert"></i></span><div class="grow"><div class="t">Vấn đề N+1 query là gì? Phát hiện và khắc phục thế nào?</div><div class="m"><span class="tagc k-junior">Junior</span><span style="color:var(--red)">Câu yếu · 4/10</span></div></div></div>
+      <div class="qi"><span class="st"></span><div class="grow"><div class="t">Normalization là gì? Khi nào nên denormalize?</div><div class="m"><span class="tagc k-junior">Junior</span>Chưa làm</div></div></div>
+    </div>
+  </div>
+  <nav class="tabbar">
+    <span class="tab on"><i data-i="list"></i>Câu hỏi</span>
+    <span class="tab"><i data-i="home"></i>Hôm nay</span>
+    <span class="tab"><i data-i="book"></i>Luyện<span class="b">3</span></span>
+    <span class="tab"><i data-i="abc"></i>Thuật ngữ</span>
+    <span class="tab"><i data-i="mic"></i>Phỏng vấn</span>
+  </nav>
+  <div class="home-ind"></div>
+</section>
+
+<!-- 0b. Thuật ngữ: A–Z, lọc chưa hiểu/đã hiểu theo mảng, thanh chữ cái bên phải để nhảy nhanh. Chạm 1 dòng → sheet giống popup ở màn Đáp án -->
+<section class="screen" id="glossary">
+  <div class="status"><span>9:41</span><span class="r">●●● <span class="batt"><i></i></span></span></div>
+  <div class="body" style="gap:12px">
+    <div class="row" style="align-items:baseline"><span class="grow small sub" style="font-weight:600">Đã hiểu 41/273 thuật ngữ</span><span class="small" style="font-weight:700;color:var(--green)">15%</span></div>
+    <div class="bar" style="margin-top:-6px;flex:none"><span style="width:15%;--c:var(--green)"></span></div>
+    <div class="row" style="gap:8px">
+      <div class="search grow"><i data-i="search"></i>Tìm thuật ngữ…</div>
+      <span class="chip k-be" style="height:46px;border-radius:14px"><i data-i="t-be"></i>Backend<i data-i="down"></i></span>
+    </div>
+    <div class="seg three"><span>Tất cả<span class="n">96</span></span><span class="on">Chưa hiểu<span class="n">81</span></span><span>Đã hiểu<span class="n">15</span></span></div>
+    <div class="letter">A</div>
+    <div class="card" style="box-shadow:none;margin-right:10px">
+      <div class="gl"><div class="grow"><div class="t mono">ACID</div><div class="d">Bốn tính chất của transaction: trọn vẹn, đúng ràng buộc, cô lập, bền vững.</div></div><span class="xs sub">4 câu</span></div>
+      <div class="gl"><div class="grow"><div class="t mono">API gateway</div><div class="d">Cổng vào chung đứng trước nhiều service: xác thực, rate limit, định tuyến.</div></div><span class="xs sub">3 câu</span></div>
+    </div>
+    <div class="letter">B</div>
+    <div class="card" style="box-shadow:none;margin-right:10px">
+      <div class="gl"><div class="grow"><div class="t mono">B+Tree</div><div class="d">Cây cân bằng database dùng làm index: tìm, chèn, quét khoảng đều nhanh.</div></div><span class="xs sub">2 câu</span></div>
+      <div class="gl"><div class="grow"><div class="t mono">Backpressure</div><div class="d">Bên nhận báo bên gửi chậm lại khi xử lý không kịp, thay vì để hàng đợi phình ra.</div></div><span class="xs sub">2 câu</span></div>
+    </div>
+    <div class="letter">C</div>
+    <div class="card" style="box-shadow:none;margin-right:10px">
+      <div class="gl"><div class="grow"><div class="t mono">CAP</div><div class="d">Khi mạng giữa các node đứt, phải chọn trả dữ liệu đúng hay luôn trả lời.</div></div><span class="xs sub">3 câu</span></div>
+      <div class="gl"><div class="grow"><div class="t mono">Circuit breaker</div><div class="d">Ngắt gọi tạm thời tới service đang lỗi để nó hồi lại, tránh sập dây chuyền.</div></div><span class="xs sub">2 câu</span></div>
+      <div class="gl"><div class="grow"><div class="t mono">Connection pool</div><div class="d">Nhóm kết nối mở sẵn và dùng lại, vì mở kết nối mới cho mỗi request rất tốn.</div></div><span class="xs sub">2 câu</span></div>
+    </div>
+  </div>
+  <div class="az"><span>A</span><span>B</span><span>C</span><span>D</span><span>E</span><span>F</span><span>G</span><span>H</span><span>I</span><span>J</span><span>K</span><span>L</span><span>M</span><span>N</span><span>O</span><span>P</span><span>R</span><span>S</span><span>T</span><span>U</span><span>V</span><span>W</span><span>X</span><span>Z</span><span>#</span></div>
+  <nav class="tabbar">
+    <span class="tab"><i data-i="list"></i>Câu hỏi</span>
+    <span class="tab"><i data-i="home"></i>Hôm nay</span>
+    <span class="tab"><i data-i="book"></i>Luyện<span class="b">3</span></span>
+    <span class="tab on"><i data-i="abc"></i>Thuật ngữ</span>
+    <span class="tab"><i data-i="mic"></i>Phỏng vấn</span>
+  </nav>
+  <div class="home-ind"></div>
+</section>
+
+<!-- 1. Onboarding: 1 màn, hỏi quyền thông báo đúng lúc người dùng hiểu vì sao -->
+<section class="screen" id="onboard">
+  <div class="status"><span>9:41</span><span class="r">●●● <span class="batt"><i></i></span></span></div>
+  <div class="body" style="gap:20px;padding-top:12px">
+    <div class="row"><div class="appic"><i data-i="code"></i></div><b style="font-size:17px">DevInterview</b><span style="margin-left:auto" class="sub small">Bỏ qua</span></div>
+    <div>
+      <h1>Bạn sắp phỏng vấn vị trí nào?</h1>
+      <p class="sub" style="margin-top:6px">Chọn 1–2 mảng. Đổi lại được bất cứ lúc nào.</p>
+    </div>
+    <div class="wrap">
+      <span class="chip k-fe"><i data-i="t-fe"></i>Frontend</span>
+      <span class="chip on k-be"><i data-i="t-be"></i>Backend</span>
+      <span class="chip on k-java"><i data-i="t-java"></i>Java & Spring</span>
+      <span class="chip k-mo"><i data-i="t-mo"></i>Mobile</span>
+      <span class="chip k-ai"><i data-i="t-ai"></i>AI / LLM</span>
+      <span class="chip k-do"><i data-i="t-do"></i>DevOps</span>
+      <span class="chip k-da"><i data-i="t-da"></i>Data</span>
+      <span class="chip k-qa"><i data-i="t-qa"></i>QA / Tester</span>
+      <span class="chip k-ds"><i data-i="t-ds"></i>DSA</span>
+      <span class="chip k-sd"><i data-i="t-sd"></i>System Design</span>
+    </div>
+    <div class="col" style="gap:8px">
+      <b class="small">Cấp độ</b>
+      <div class="seg"><span>Intern</span><span class="on">Junior</span><span>Mid</span><span>Senior</span></div>
+    </div>
+    <div class="card" style="box-shadow:none">
+      <div class="setrow"><div class="chipi sm"><i data-i="cal"></i></div><div class="grow"><b class="small">Ngày phỏng vấn</b><div class="xs sub">Thứ Năm, 12/11 · còn 12 ngày</div></div><i data-i="chev" style="color:var(--subtle)"></i></div>
+      <div class="setrow"><div class="chipi sm" style="--c:#c2410c"><i data-i="bell"></i></div><div class="grow"><b class="small">Nhắc ôn mỗi tối</b><div class="xs sub">20:00 · chỉ khi có thẻ đến hạn</div></div><span class="toggle on"></span></div>
+    </div>
+    <div style="margin-top:auto" class="col">
+      <span class="btn primary">Bắt đầu · ~10 phút mỗi ngày</span>
+      <p class="xs sub" style="text-align:center;margin-top:10px">Không cần tài khoản. Tiến độ lưu trên máy.</p>
+    </div>
+  </div>
+  <div class="home-ind"></div>
+</section>
+
+<!-- 2. Hôm nay: một nút chính duy nhất -->
+<section class="screen" id="today">
+  <div class="status"><span>9:41</span><span class="r">●●● <span class="batt"><i></i></span></span></div>
+  <div class="body">
+    <div class="row">
+      <b class="grow" style="font-size:17px">Thứ Bảy, 31/10</b>
+      <span class="streak"><i data-i="flame"></i>7</span>
+      <span class="avatar">T</span>
+    </div>
+    <div class="hero">
+      <div class="row" style="justify-content:space-between"><b style="font-size:15px;opacity:.9">Phiên hôm nay</b><span class="xs" style="opacity:.85">Backend · Java</span></div>
+      <div class="row" style="align-items:baseline;gap:8px;margin-top:6px"><span class="big">9</span><span style="font-size:18px;font-weight:700">phút</span></div>
+      <div class="parts">
+        <div class="part"><b>6</b><span>thẻ đến hạn</span></div>
+        <div class="part"><b>2</b><span>câu yếu</span></div>
+        <div class="part"><b>1</b><span>câu mới</span></div>
+      </div>
+      <div class="go"><i data-i="play"></i>Bắt đầu ôn</div>
+    </div>
+    <div class="card pad row" style="gap:12px">
+      <div class="chipi" style="--c:#c2410c"><i data-i="cal"></i></div>
+      <div class="grow">
+        <div class="row" style="justify-content:space-between"><b class="small">Phỏng vấn Backend Junior</b><b class="small" style="color:var(--tip-head)">12 ngày</b></div>
+        <div class="bar" style="margin:8px 0 4px"><span style="width:64%"></span></div>
+        <div class="xs sub">Sẵn sàng 64% · còn 3 chủ đề chưa ôn</div>
+      </div>
+    </div>
+    <div class="tiles">
+      <div class="card tile">
+        <div class="chipi" style="--c:#dc2626"><i data-i="mic"></i></div>
+        <div><b>Phỏng vấn AI</b><div class="xs sub">5 câu · nói hoặc gõ</div></div>
+      </div>
+      <div class="card tile">
+        <div class="chipi k-be"><i data-i="map"></i></div>
+        <div><b>Tiếp lộ trình</b><div class="xs sub">Database · 6/9</div></div>
+      </div>
+    </div>
+    <div class="card pad" style="padding:14px 16px">
+      <div class="week">
+        <div class="day done"><i><i data-i="check"></i></i>T2</div>
+        <div class="day done"><i><i data-i="check"></i></i>T3</div>
+        <div class="day done"><i><i data-i="check"></i></i>T4</div>
+        <div class="day done"><i><i data-i="check"></i></i>T5</div>
+        <div class="day done"><i><i data-i="check"></i></i>T6</div>
+        <div class="day today"><i></i>T7</div>
+        <div class="day"><i></i>CN</div>
+      </div>
+    </div>
+  </div>
+  <nav class="tabbar">
+    <span class="tab"><i data-i="list"></i>Câu hỏi</span>
+    <span class="tab on"><i data-i="home"></i>Hôm nay</span>
+    <span class="tab"><i data-i="book"></i>Luyện<span class="b">3</span></span>
+    <span class="tab"><i data-i="abc"></i>Thuật ngữ</span>
+    <span class="tab"><i data-i="mic"></i>Phỏng vấn</span>
+  </nav>
+  <div class="home-ind"></div>
+</section>
+
+<!-- 3. Flashcard: vuốt để chấm, nút bấm vẫn có cho người không vuốt -->
+<section class="screen" id="card">
+  <div class="status"><span>9:41</span><span class="r">●●● <span class="batt"><i></i></span></span></div>
+  <div class="topnav"><span class="iconbtn"><i data-i="x"></i></span><div class="prog"><span style="width:33%"></span></div><b class="small sub">3/9</b></div>
+  <div class="body" style="padding-top:0;gap:18px">
+    <div class="stack">
+      <div class="fc back2"></div>
+      <div class="fc back1"></div>
+      <div class="fc swipe">
+        <div class="row" style="justify-content:flex-end;gap:6px"><span class="tagc k-be">Backend</span><span class="tagc k-mid">Mid</span><i data-i="star" style="color:var(--subtle);margin-left:4px"></i></div>
+        <div class="xs sub" style="font-weight:700;margin-top:auto;letter-spacing:.05em">DATABASE · ĐẾN HẠN HÔM NAY</div>
+        <div class="q" style="margin-top:8px">Index trong database là gì? Khi nào index làm chậm hệ thống?</div>
+        <div class="row xs sub" style="margin-top:14px;gap:6px"><i data-i="rotate" style="width:15px;height:15px"></i>Lần trước: Khó · 3 ngày trước</div>
+        <div class="hint"><i data-i="hand"></i>Chạm để xem đáp án</div>
+        <span class="stamp">DỄ</span>
+      </div>
+    </div>
+    <div class="row" style="gap:10px">
+      <span class="btn ghost" style="height:46px;font-size:14px"><i data-i="mic" style="color:var(--red)"></i>Nói thử câu trả lời trước</span>
+    </div>
+    <div class="col" style="gap:8px">
+      <div class="gest"><span>← Khó</span><span>↑ Vừa</span><span>Dễ →</span></div>
+    </div>
+  </div>
+  <div style="height:30px"></div>
+  <div class="home-ind"></div>
+</section>
+
+<!-- 4. Đáp án sau khi lật + popup thuật ngữ + chấm có ghi rõ lần ôn tới -->
+<section class="screen" id="answer">
+  <div class="status"><span>9:41</span><span class="r">●●● <span class="batt"><i></i></span></span></div>
+  <div class="topnav"><span class="iconbtn"><i data-i="x"></i></span><div class="prog"><span style="width:33%"></span></div><b class="small sub">3/9</b></div>
+  <div class="body" style="padding-top:2px;gap:12px">
+    <div class="row" style="gap:6px"><span class="tagc k-be">Backend</span><span class="tagc k-mid">Mid</span><span style="margin-left:auto" class="row"><i data-i="volume" style="color:var(--subtle)"></i><i data-i="star" style="color:var(--amber);fill:var(--amber)"></i></span></div>
+    <h2 style="font-size:19px;line-height:1.35">Index trong database là gì? Khi nào index làm chậm hệ thống?</h2>
+    <div class="box key"><div class="h"><i data-i="clock"></i>Trả lời 30 giây</div>
+      <p>Index là cấu trúc dữ liệu phụ (thường là <span class="u">B+Tree</span>) giúp tìm bản ghi mà không quét toàn bảng. Đổi lại tốn bộ nhớ và làm <b>chậm thao tác ghi</b>: mỗi INSERT/UPDATE phải cập nhật mọi index.</p></div>
+    <div class="box ex"><div class="h"><i data-i="bulb"></i>Ví dụ đời thường</div>
+      <p>Như mục lục cuối sách: tra "deadlock" ra trang 214 thay vì lật cả cuốn. Nhưng bảng log ghi liên tục mà có 10 index thì ghi chậm hẳn.</p></div>
+    <div class="box tip"><div class="h"><i data-i="target"></i>Mẹo ghi điểm</div>
+      <p>Kể lần bạn dùng <span class="u open">EXPLAIN</span> tối ưu một query thật, kèm con số trước/sau.</p></div>
+    <div class="row small" style="color:var(--brand);font-weight:700;gap:6px;justify-content:center">Xem đáp án đầy đủ + 2 câu hỏi tiếp<i data-i="chev" style="width:16px;height:16px"></i></div>
+    <div class="rate" style="margin-top:auto">
+      <span class="rbtn hard">Khó<span>ôn lại mai</span></span>
+      <span class="rbtn mid">Vừa<span>4 ngày</span></span>
+      <span class="rbtn easy">Dễ<span>8 ngày</span></span>
+    </div>
+  </div>
+  <div class="pop">
+    <div class="row" style="justify-content:space-between"><b style="font-size:17px" class="mono">EXPLAIN</b><span class="tagc" style="--c:#475569">Database</span></div>
+    <p class="small" style="margin:6px 0 10px;color:var(--body)">Lệnh bắt database in ra kế hoạch chạy query: có dùng index không, quét bao nhiêu dòng, bước nào tốn nhất.</p>
+    <div class="row" style="gap:8px">
+      <span class="sbtn" style="background:var(--brand);color:#fff;flex:1"><i data-i="check" style="width:16px;height:16px"></i>Đã hiểu</span>
+      <span class="sbtn" style="background:var(--hover);color:var(--text);flex:1">Câu giải thích<i data-i="chev" style="width:16px;height:16px"></i></span>
+    </div>
+  </div>
+  <div style="height:30px"></div>
+  <div class="home-ind"></div>
+</section>
+
+<!-- 5. Luyện: lộ trình mảng đang học + tìm kiếm, gộp ngân hàng/lộ trình/câu yếu/đã lưu -->
+<section class="screen" id="practice">
+  <div class="status"><span>9:41</span><span class="r">●●● <span class="batt"><i></i></span></span></div>
+  <div class="body" style="gap:14px">
+    <div class="search"><i data-i="search"></i>Tìm trong 479 câu, 273 thuật ngữ</div>
+    <div class="row" style="gap:8px">
+      <span class="chip on">Lộ trình</span>
+      <span class="chip"><i data-i="star" style="--c:#d97706"></i>Đã lưu <span class="n">12</span></span>
+      <span class="chip" style="color:var(--red);border-color:#fecaca"><i data-i="alert" style="--c:#dc2626"></i>Câu yếu <span class="n" style="color:var(--red)">3</span></span>
+    </div>
+    <div class="card pad" style="padding:14px 16px 6px">
+      <div class="row" style="margin-bottom:4px">
+        <div class="chipi k-be"><i data-i="t-be"></i></div>
+        <div class="grow"><b>Backend</b><div class="xs sub">18/47 câu · Junior</div></div>
+        <span class="tagc" style="--c:#475569">Đổi<i data-i="down" style="width:14px;height:14px"></i></span>
+      </div>
+      <div class="topic"><span class="tnum done"><i data-i="check"></i></span><div class="grow"><b class="small">Nền tảng & HTTP</b></div><span class="xs sub">8/8</span></div>
+      <div class="topic"><span class="tnum done"><i data-i="check"></i></span><div class="grow"><b class="small">REST API</b></div><span class="xs sub">4/4</span></div>
+      <div class="topic"><span class="tnum cur">3</span><div class="grow"><b class="small">Database</b><div class="bar" style="margin-top:6px"><span style="width:66%"></span></div></div><span class="sbtn" style="background:var(--brand);color:#fff;height:34px;font-size:13px">Tiếp tục</span></div>
+      <div class="topic"><span class="tnum">4</span><div class="grow"><b class="small">Caching</b></div><span class="xs sub">0/6</span></div>
+      <div class="topic"><span class="tnum">5</span><div class="grow"><b class="small">Message queue</b></div><span class="xs sub">0/5</span></div>
+    </div>
+    <div class="sect"><h2>Mảng khác</h2><a>Tất cả 12</a></div>
+    <div class="card" style="box-shadow:none">
+      <div class="lrow"><div class="chipi sm k-java"><i data-i="t-java"></i></div><div class="grow"><b class="small">Java & Spring</b><div class="bar" style="margin-top:6px"><span style="width:12%"></span></div></div><span class="xs sub">5/43</span></div>
+      <div class="lrow"><div class="chipi sm k-sd"><i data-i="t-sd"></i></div><div class="grow"><b class="small">System Design</b><div class="bar" style="margin-top:6px"><span style="width:7%"></span></div></div><span class="xs sub">2/29</span></div>
+      <div class="lrow"><div class="chipi sm k-bh"><i data-i="t-bh"></i></div><div class="grow"><b class="small">Behavioral</b><div class="bar" style="margin-top:6px"><span style="width:0"></span></div></div><span class="xs sub">0/38</span></div>
+    </div>
+  </div>
+  <nav class="tabbar">
+    <span class="tab"><i data-i="list"></i>Câu hỏi</span>
+    <span class="tab"><i data-i="home"></i>Hôm nay</span>
+    <span class="tab on"><i data-i="book"></i>Luyện<span class="b">3</span></span>
+    <span class="tab"><i data-i="abc"></i>Thuật ngữ</span>
+    <span class="tab"><i data-i="mic"></i>Phỏng vấn</span>
+  </nav>
+  <div class="home-ind"></div>
+</section>
+
+<!-- 6. Phỏng vấn bằng giọng nói -->
+<section class="screen" id="interview">
+  <div class="status"><span>9:41</span><span class="r">●●● <span class="batt"><i></i></span></span></div>
+  <div class="topnav">
+    <span class="iconbtn"><i data-i="x"></i></span>
+    <div class="grow" style="text-align:center"><b class="small">Backend · Product</b><div class="xs sub">Câu 2/5 · 06:12</div></div>
+    <span class="iconbtn"><i data-i="keyboard"></i></span>
+  </div>
+  <div class="prog" style="flex:none;margin:0 20px 6px;height:6px"><span style="width:30%"></span></div>
+  <div class="room">
+    <div class="ai">
+      <div class="aiav"><i data-i="bot"></i></div>
+      <div class="col" style="gap:6px">
+        <div class="bub">Bạn vừa nói dùng Redis để cache. Nếu Redis chết, request đi đâu, và làm sao để database không bị dồn tải?</div>
+        <div class="row xs sub" style="gap:6px;font-weight:600"><i data-i="volume" style="width:15px;height:15px"></i>Nghe lại · Chậm hơn</div>
+      </div>
+    </div>
+    <div class="me">Em cho request đi thẳng xuống DB nhưng có rate limit, đồng thời bật circuit breaker để nếu DB cũng chậm thì trả dữ liệu cũ<span class="caret"></span></div>
+    <div class="xs sub" style="align-self:flex-end;font-weight:600;margin-top:-6px"><span style="color:var(--red)">●</span> Đang nghe · tự gửi khi bạn ngừng 2 giây</div>
+    <div class="wave" style="margin-top:auto">
+      <i style="height:12px"></i><i style="height:22px"></i><i style="height:36px"></i><i style="height:18px"></i><i style="height:44px"></i><i style="height:30px"></i><i style="height:52px"></i><i style="height:26px"></i><i style="height:40px"></i><i style="height:20px"></i><i style="height:34px"></i><i style="height:14px"></i><i style="height:28px"></i><i style="height:10px"></i><i style="height:22px"></i><i style="height:8px"></i>
+    </div>
+  </div>
+  <div class="controls">
+    <div class="side"><span class="iconbtn"><i data-i="bulb"></i></span>Gợi ý</div>
+    <div class="side" style="gap:10px"><span class="mic"><i></i></span><b style="color:var(--text)">Chạm để gửi</b></div>
+    <div class="side"><span class="iconbtn"><i data-i="skip"></i></span>Bỏ qua</div>
+  </div>
+  <div class="home-ind"></div>
+</section>
+
+<!-- 7. Báo cáo: điểm + câu yếu tự vào lịch ôn -->
+<section class="screen" id="report">
+  <div class="status"><span>9:41</span><span class="r">●●● <span class="batt"><i></i></span></span></div>
+  <div class="topnav"><span class="iconbtn"><i data-i="x"></i></span><b class="grow" style="text-align:center">Kết quả</b><span class="iconbtn"><i data-i="share"></i></span></div>
+  <div class="body" style="gap:14px;padding-top:4px">
+    <div class="row" style="gap:18px">
+      <div class="ring"><div><div><b>6.8</b><div class="xs sub" style="font-weight:600">/10</div></div></div></div>
+      <div class="grow">
+        <b style="font-size:18px">Khá — gần đạt Junior</b>
+        <p class="small sub" style="margin-top:4px">Nắm chắc cache và REST, còn lúng túng khi hệ thống lỗi.</p>
+        <span class="tagc" style="--c:#059669;margin-top:8px">↑ 0.9 so với lần trước</span>
+      </div>
+    </div>
+    <div class="card pad crit">
+      <span>Kiến thức</span><div class="bar"><span style="width:75%"></span></div><b>7.5</b>
+      <span>Giải quyết vấn đề</span><div class="bar"><span style="width:60%;--c:#d97706"></span></div><b>6.0</b>
+      <span>Giao tiếp</span><div class="bar"><span style="width:70%"></span></div><b>7.0</b>
+    </div>
+    <div class="card" style="box-shadow:none">
+      <div class="qrow"><span class="sc g">8</span><span class="grow small" style="font-weight:600">REST và GraphQL khác nhau ở đâu?</span><i data-i="chev" style="color:var(--subtle);width:16px"></i></div>
+      <div class="qrow"><span class="sc r">4</span><span class="grow small" style="font-weight:600">Redis chết thì request đi đâu?</span><span class="tagc" style="--c:#dc2626">Yếu</span></div>
+      <div class="qrow"><span class="sc a">6</span><span class="grow small" style="font-weight:600">Thiết kế API phân trang</span><i data-i="chev" style="color:var(--subtle);width:16px"></i></div>
+      <div class="qrow"><span class="sc r">3</span><span class="grow small" style="font-weight:600">Index làm chậm ghi khi nào?</span><span class="tagc" style="--c:#dc2626">Yếu</span></div>
+      <div class="qrow"><span class="sc g">9</span><span class="grow small" style="font-weight:600">Kể một lần bạn sửa bug production</span><i data-i="chev" style="color:var(--subtle);width:16px"></i></div>
+    </div>
+    <div class="row small" style="gap:10px;background:#ecfdf5;border:1px solid #a7f3d0;color:#065f46;border-radius:14px;padding:12px 14px;font-weight:600">
+      <i data-i="check" style="color:var(--green)"></i>2 câu yếu đã vào phiên ôn ngày mai
+    </div>
+    <div class="col" style="gap:10px;margin-top:auto">
+      <span class="btn primary"><i data-i="rotate"></i>Luyện lại 2 câu yếu ngay</span>
+    </div>
+  </div>
+  <div style="height:30px"></div>
+  <div class="home-ind"></div>
+</section>
+
+<!-- 8. Màn khoá: thông báo nhắc ôn + widget đếm ngược -->
+<section class="screen lock" id="lock">
+  <div class="status"><span></span><span class="r">●●● <span class="batt"><i></i></span></span></div>
+  <div class="clock"><div class="d">Thứ Bảy, 31 tháng 10</div><div class="t">20:00</div></div>
+  <div class="lw">
+    <div><span class="gauge"><i>64%</i></span><span><b>12 ngày</b>đến phỏng vấn</span></div>
+    <div><i data-i="flame" style="width:26px;height:26px;color:#fdba74"></i><span><b>7 ngày</b>liên tiếp</span></div>
+  </div>
+  <div class="notes">
+    <div class="note">
+      <div class="appic"><i data-i="code"></i></div>
+      <div class="grow">
+        <div class="row xs sub" style="justify-content:space-between"><b style="color:var(--text)">DevInterview</b><span>bây giờ</span></div>
+        <div class="nt"><b>6 thẻ cần ôn · ~9 phút</b><br>Ôn tối nay để giữ chuỗi 7 ngày 🔥</div>
+        <div class="acts"><span>Ôn ngay</span><span>Nhắc lúc 22:00</span></div>
+      </div>
+    </div>
+    <div class="note" style="opacity:.9">
+      <div class="appic"><i data-i="code"></i></div>
+      <div class="grow">
+        <div class="row xs sub" style="justify-content:space-between"><b style="color:var(--text)">Câu hỏi của ngày</b><span>8:00</span></div>
+        <div class="nt">Index làm chậm hệ thống khi nào? Chạm để trả lời trong 30 giây.</div>
+      </div>
+    </div>
+  </div>
+  <div class="lockbtns"><i><svg class="i" viewBox="0 0 24 24"><path d="M18 6c0 2-2 2-2 4v10a2 2 0 0 1-2 2h-4a2 2 0 0 1-2-2V10c0-2-2-2-2-4V2h12zM6 6h12M12 12v1"/></svg></i><i><svg class="i" viewBox="0 0 24 24"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3zM12 13m-3 0a3 3 0 1 0 6 0a3 3 0 1 0-6 0"/></svg></i></div>
+  <div class="home-ind"></div>
+</section>
+
+<div class="overview" id="overview">
+  <div class="ov-head">
+    <div class="appic"><i data-i="code"></i></div>
+    <div><h1 style="font-size:26px">DevInterview — app mobile v3</h1><p class="sub">5 tab · vòng lặp: Hôm nay → lật thẻ → phỏng vấn giọng nói → báo cáo → câu yếu quay lại lịch ôn</p></div>
+  </div>
+  <div class="ov-grid"></div>
+</div>
+
+<script>
+// Lucide paths (giống src/components/icon.tsx + vài icon riêng cho mobile)
+const P={
+  list:"M3 12h.01M3 18h.01M3 6h.01M8 12h13M8 18h13M8 6h13",
+  abc:"m14 12 4 4 4-4M18 16V7M2 16l4.039-9.69a.5.5 0 0 1 .923 0L11 16M3.304 13h6.392",
+  filter:"M21 4h-7M10 4H3M21 12h-9M8 12H3M21 20h-5M12 20H3M14 2v4M8 10v4M16 18v4",
+  home:"M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8M3 10a2 2 0 0 1 .709-1.528l7-5.999a2 2 0 0 1 2.582 0l7 5.999A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z",
+  book:"M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2zM22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z",
+  map:"M14.1 5.55a2 2 0 0 0 1.8 0l3.66-1.83A1 1 0 0 1 21 4.62v12.76a1 1 0 0 1-.55.9l-4.55 2.27a2 2 0 0 1-1.8 0l-4.2-2.1a2 2 0 0 0-1.8 0l-3.66 1.83A1 1 0 0 1 3 19.38V6.62a1 1 0 0 1 .55-.9L8.1 3.45a2 2 0 0 1 1.8 0zM15 5.76v15M9 3.24v15",
+  search:"M11 11m-8 0a8 8 0 1 0 16 0a8 8 0 1 0-16 0M21 21l-4.3-4.3",
+  flame:"M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.07-2.14-.22-4.05 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.15.43-2.29 1-3a2.5 2.5 0 0 0 2.5 2.5z",
+  check:"M20 6 9 17l-5-5",
+  star:"M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01z",
+  clock:"M12 12m-10 0a10 10 0 1 0 20 0a10 10 0 1 0-20 0M12 6v6l4 2",
+  cal:"M5 4h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2zM16 2v4M8 2v4M3 10h18",
+  play:"M6 3l14 9-14 9z",
+  chev:"m9 18 6-6-6-6",
+  down:"m6 9 6 6 6-6",
+  code:"m16 18 6-6-6-6M8 6l-6 6 6 6",
+  bulb:"M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5M9 18h6M10 22h4",
+  mic:"M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3ZM19 10v2a7 7 0 0 1-14 0v-2M12 19v3",
+  target:"M12 12m-10 0a10 10 0 1 0 20 0a10 10 0 1 0-20 0M12 12m-6 0a6 6 0 1 0 12 0a6 6 0 1 0-12 0M12 12m-2 0a2 2 0 1 0 4 0a2 2 0 1 0-4 0",
+  rotate:"M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8M3 3v5h5",
+  alert:"M12 12m-10 0a10 10 0 1 0 20 0a10 10 0 1 0-20 0M12 8v4M12 16h.01",
+  x:"M18 6 6 18M6 6l12 12",
+  bot:"M12 8V4H8M6 8h12a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2zM2 14h2M20 14h2M15 13v2M9 13v2",
+  bell:"M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9M10.3 21a1.94 1.94 0 0 0 3.4 0",
+  keyboard:"M4 5h16a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2zM6 9h.01M10 9h.01M14 9h.01M18 9h.01M6 13h.01M18 13h.01M8 15h8",
+  volume:"M11 5 6 9H2v6h4l5 4V5zM15.54 8.46a5 5 0 0 1 0 7.07M19.07 4.93a10 10 0 0 1 0 14.14",
+  skip:"M5 4l10 8-10 8zM19 5v14",
+  share:"M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8M16 6l-4-4-4 4M12 2v13",
+  hand:"M18 11V6a2 2 0 0 0-4 0M14 10V4a2 2 0 0 0-4 0v2M10 10.5V6a2 2 0 0 0-4 0v8M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-5.99-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 15",
+  "t-fe":"M4 3h16a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2zM8 21h8M12 17v4",
+  "t-be":"M4 2h16a2 2 0 0 1 2 2v4a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2zM4 14h16a2 2 0 0 1 2 2v4a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2v-4a2 2 0 0 1 2-2zM6 6h.01M6 18h.01",
+  "t-ai":"M12 5a3 3 0 1 0-5.997.125 4 4 0 0 0-2.526 5.77 4 4 0 0 0 .556 6.588A4 4 0 1 0 12 18ZM12 5a3 3 0 1 1 5.997.125 4 4 0 0 1 2.526 5.77 4 4 0 0 1-.556 6.588A4 4 0 1 1 12 18ZM12 5v13",
+  "t-do":"M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z",
+  "t-mo":"M7 2h10a2 2 0 0 1 2 2v16a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2zM12 18h.01",
+  "t-da":"M3 5a9 3 0 1 0 18 0a9 3 0 1 0-18 0M3 5v14a9 3 0 0 0 18 0V5M3 12a9 3 0 0 0 18 0",
+  "t-ds":"M8 3H7a2 2 0 0 0-2 2v5a2 2 0 0 1-2 2 2 2 0 0 1 2 2v5c0 1.1.9 2 2 2h1M16 21h1a2 2 0 0 0 2-2v-5c0-1.1.9-2 2-2a2 2 0 0 1-2-2V5a2 2 0 0 0-2-2h-1",
+  "t-sd":"M17 16h4a1 1 0 0 1 1 1v4a1 1 0 0 1-1 1h-4a1 1 0 0 1-1-1v-4a1 1 0 0 1 1-1zM3 16h4a1 1 0 0 1 1 1v4a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1v-4a1 1 0 0 1 1-1zM10 2h4a1 1 0 0 1 1 1v4a1 1 0 0 1-1 1h-4a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1zM5 16v-3a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v3M12 12V8",
+  "t-java":"M10 2v2M14 2v2M16 8a1 1 0 0 1 1 1v8a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4V9a1 1 0 0 1 1-1h14a4 4 0 1 1 0 8h-1M6 2v2",
+  "t-qa":"m8 2 1.88 1.88M14.12 3.88 16 2M9 7.13v-1a3.003 3.003 0 1 1 6 0v1M12 20c-3.3 0-6-2.7-6-6v-3a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v3c0 3.3-2.7 6-6 6M12 20v-9M6.53 9C4.6 8.8 3 7.1 3 5M6 13H2M3 21c0-2.1 1.7-3.9 3.8-4M20.97 5c0 2.1-1.6 3.8-3.5 4M22 13h-4M17.2 17c2.1.1 3.8 1.9 3.8 4",
+  "t-bh":"M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M9 7m-4 0a4 4 0 1 0 8 0a4 4 0 1 0-8 0M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75",
+};
+document.querySelectorAll("i[data-i]").forEach(el=>{
+  const s=document.createElementNS("http://www.w3.org/2000/svg","svg");
+  s.setAttribute("viewBox","0 0 24 24");s.setAttribute("class","i");
+  if(el.getAttribute("style"))s.setAttribute("style",el.getAttribute("style"));
+  s.innerHTML=`<path d="${P[el.dataset.i]||""}"/>`;el.replaceWith(s);
+});
+const s=new URLSearchParams(location.search).get("s");
+const caps={bank:["Câu hỏi","Tab đầu: lọc mảng/level/trạng thái, nhóm theo chủ đề lộ trình"],glossary:["Thuật ngữ","A–Z, lọc chưa hiểu/đã hiểu, thanh chữ cái nhảy nhanh"],onboard:["Bắt đầu","1 màn: mảng, cấp độ, ngày PV, nhắc ôn"],today:["Hôm nay","Một nút chính: phiên ôn ~9 phút"],card:["Flashcard","Vuốt trái/lên/phải = Khó/Vừa/Dễ"],answer:["Đáp án","Chạm thuật ngữ → popup; nút chấm ghi rõ lần ôn tới"],practice:["Luyện","Lộ trình + tìm kiếm + đã lưu + câu yếu"],interview:["Phỏng vấn giọng nói","AI đọc câu hỏi, bạn nói; vẫn gõ được"],report:["Kết quả","Điểm 3 tiêu chí, câu yếu tự vào lịch ôn"],lock:["Màn khoá","Nhắc ôn 20:00 + widget đếm ngược"]};
+if(s&&document.getElementById(s))document.getElementById(s).classList.add("on");
+else{
+  const ov=document.getElementById("overview"),g=ov.querySelector(".ov-grid");ov.classList.add("on");
+  Object.entries(caps).forEach(([id,[t,d]])=>g.insertAdjacentHTML("beforeend",`<figure><iframe class="phone" src="?s=${id}"></iframe><figcaption>${t}<span>${d}</span></figcaption></figure>`));
+}
+</script>
+</body>
+</html>

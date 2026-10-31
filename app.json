@@ -1,0 +1,53 @@
+{
+  "expo": {
+    "name": "DevInterview",
+    "slug": "devinterview",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/images/icon.png",
+    "scheme": "devinterview",
+    "userInterfaceStyle": "automatic",
+    "ios": {
+      "icon": "./assets/expo.icon",
+      "bundleIdentifier": "com.devinterview.app",
+      "supportsTablet": false
+    },
+    "android": {
+      "package": "com.devinterview.app",
+      "adaptiveIcon": {
+        "backgroundColor": "#6d28d9",
+        "foregroundImage": "./assets/images/android-icon-foreground.png",
+        "backgroundImage": "./assets/images/android-icon-background.png",
+        "monochromeImage": "./assets/images/android-icon-monochrome.png"
+      },
+      "predictiveBackGestureEnabled": false
+    },
+    "web": {
+      "favicon": "./assets/images/favicon.png"
+    },
+    "plugins": [
+      "expo-router",
+      [
+        "expo-splash-screen",
+        {
+          "backgroundColor": "#6d28d9",
+          "image": "./assets/images/splash-icon.png",
+          "imageWidth": 76
+        }
+      ],
+      "expo-sqlite",
+      "@react-native-community/datetimepicker",
+      [
+        "expo-speech-recognition",
+        {
+          "microphonePermission": "DevInterview dùng micro để bạn trả lời câu hỏi phỏng vấn bằng giọng nói.",
+          "speechRecognitionPermission": "DevInterview chuyển giọng nói của bạn thành chữ để AI chấm câu trả lời."
+        }
+      ]
+    ],
+    "experiments": {
+      "typedRoutes": true,
+      "reactCompiler": true
+    }
+  }
+}
